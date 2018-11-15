@@ -61,7 +61,7 @@ static AddressTableEntry::Type translateTransactionType(const QString &strPurpos
         addressType = AddressTableEntry::Sending;
     else if (strPurpose == "receive")
         addressType = AddressTableEntry::Receiving;
-    else if (strPurpose == "Mint")
+    else if (strPurpose == "mint")
         addressType = AddressTableEntry::Minting;
     else if (strPurpose == "unknown" || strPurpose == "") // if purpose not set, guess
         addressType = (isMine ? AddressTableEntry::Receiving : AddressTableEntry::Sending);
@@ -388,6 +388,23 @@ QString AddressTableModel::addRow(const QString &type, const QString &label, con
         }
         walletModel->wallet().learnRelatedScripts(newKey, address_type);
         strAddress = EncodeDestination(GetDestinationForKey(newKey, address_type));
+    }
+    else if (type == Mint)
+    {
+        if(!walletModel->validateAddress(address))
+        {
+            editStatus = INVALID_ADDRESS;
+            return QString();
+        }
+        // Check for duplicate addresses
+        {
+            if (walletModel->wallet().getAddress(
+                    DecodeDestination(strAddress), /* name= */ nullptr, /* is_mine= */ nullptr, /* purpose= */ nullptr))
+            {
+                editStatus = DUPLICATE_ADDRESS;
+                return QString();
+            }
+        }
     }
     else
     {
