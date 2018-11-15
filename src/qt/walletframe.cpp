@@ -200,11 +200,11 @@ void WalletFrame::usedSendingAddresses()
         walletView->usedSendingAddresses();
 }
 
-void WalletFrame::setmintingrewardAddresses()
+void WalletFrame::setMintingRewardAddresses()
 {
     WalletView *walletView = currentWalletView();
     if (walletView)
-        walletView->setmintingrewardAddresses();
+        walletView->setMintingRewardAddresses();
 }
 
 void WalletFrame::usedReceivingAddresses()

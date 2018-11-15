@@ -91,7 +91,7 @@ public Q_SLOTS:
     /** Show used receiving addresses */
     void usedReceivingAddresses();
     /** Show used sending addresses */
-    void setmintingrewardAddresses();
+    void setMintingRewardAddresses();
     /** Pass on signal over requested out-of-sync-warning information */
     void outOfSyncWarningClicked();
 };
