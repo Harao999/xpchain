@@ -84,6 +84,7 @@ AddressBookPage::AddressBookPage(const PlatformStyle *platformStyle, Mode _mode,
         {
         case SendingTab: setWindowTitle(tr("Choose the address to send coins to")); break;
         case ReceivingTab: setWindowTitle(tr("Choose the address to receive coins with")); break;
+        case MintingrewardTab: setWindowTitle(tr("Minting")); break;
         }
         connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(accept()));
         ui->tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -96,6 +97,7 @@ AddressBookPage::AddressBookPage(const PlatformStyle *platformStyle, Mode _mode,
         {
         case SendingTab: setWindowTitle(tr("Sending addresses")); break;
         case ReceivingTab: setWindowTitle(tr("Receiving addresses")); break;
+        case MintingrewardTab: setWindowTitle(tr("Minting addresses")); break;
         }
         break;
     }
@@ -110,6 +112,11 @@ AddressBookPage::AddressBookPage(const PlatformStyle *platformStyle, Mode _mode,
         ui->labelExplanation->setText(tr("These are your XPChain addresses for receiving payments. It is recommended to use a new receiving address for each transaction."));
         ui->deleteAddress->setVisible(false);
         ui->newAddress->setVisible(false);
+        break;
+    case MintingrewardTab:
+        ui->labelExplanation->setText(tr("These are your XPChain addresses for minting payments. It is recommended to use a new receiving address for each transaction."));
+        ui->deleteAddress->setVisible(true);
+        ui->newAddress->setVisible(true);
         break;
     }
 
@@ -150,7 +157,8 @@ void AddressBookPage::setModel(AddressTableModel *_model)
     if(!_model)
         return;
 
-    auto type = tab == ReceivingTab ? AddressTableModel::Receive : AddressTableModel::Send;
+    auto type = tab == ReceivingTab? AddressTableModel::Receive : tab == MintingrewardTab? AddressTableModel::Mint : AddressTableModel::Send;
+
     proxyModel = new AddressBookSortFilterProxyModel(type, this);
     proxyModel->setSourceModel(_model);
 
@@ -162,6 +170,11 @@ void AddressBookPage::setModel(AddressTableModel *_model)
     // Set column widths
     ui->tableView->horizontalHeader()->setSectionResizeMode(AddressTableModel::Label, QHeaderView::Stretch);
     ui->tableView->horizontalHeader()->setSectionResizeMode(AddressTableModel::Address, QHeaderView::ResizeToContents);
+
+    switch(tab){
+      case SendingTab: ui->tableView->hideColumn(2); break;
+      case ReceivingTab: ui->tableView->hideColumn(2); break;
+    }
 
     connect(ui->tableView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
         this, SLOT(selectionChanged()));
@@ -196,6 +209,8 @@ void AddressBookPage::onEditAction()
     EditAddressDialog dlg(
         tab == SendingTab ?
         EditAddressDialog::EditSendingAddress :
+        tab == MintingrewardTab ?
+        EditAddressDialog::EditMintingrewardAddress :
         EditAddressDialog::EditReceivingAddress, this);
     dlg.setModel(model);
     QModelIndex origIndex = proxyModel->mapToSource(indexes.at(0));
@@ -212,8 +227,12 @@ void AddressBookPage::on_newAddress_clicked()
         return;
     }
 
-    EditAddressDialog dlg(EditAddressDialog::NewSendingAddress, this);
+    EditAddressDialog dlg(
+        tab == MintingrewardTab?
+        EditAddressDialog::NewMintingrewardAddress :
+        EditAddressDialog::NewSendingAddress, this);
     dlg.setModel(model);
+
     if(dlg.exec())
     {
         newAddressToSelect = dlg.getAddress();
@@ -245,6 +264,13 @@ void AddressBookPage::selectionChanged()
         switch(tab)
         {
         case SendingTab:
+            // In sending tab, allow deletion of selection
+            ui->deleteAddress->setEnabled(true);
+            ui->deleteAddress->setVisible(true);
+            deleteAction->setEnabled(true);
+            break;
+
+        case MintingrewardTab:
             // In sending tab, allow deletion of selection
             ui->deleteAddress->setEnabled(true);
             ui->deleteAddress->setVisible(true);

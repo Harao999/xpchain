@@ -28,12 +28,18 @@ EditAddressDialog::EditAddressDialog(Mode _mode, QWidget *parent) :
     case NewSendingAddress:
         setWindowTitle(tr("New sending address"));
         break;
+    case NewMintingrewardAddress:
+        setWindowTitle(tr("New mintingreward address"));
+        break;
     case EditReceivingAddress:
         setWindowTitle(tr("Edit receiving address"));
         ui->addressEdit->setEnabled(false);
         break;
     case EditSendingAddress:
         setWindowTitle(tr("Edit sending address"));
+        break;
+    case EditMintingrewardAddress:
+        setWindowTitle(tr("Edit mintingreward address"));
         break;
     }
 
@@ -76,6 +82,13 @@ bool EditAddressDialog::saveCurrentRow()
     case NewSendingAddress:
         address = model->addRow(
                 AddressTableModel::Send,
+                ui->labelEdit->text(),
+                ui->addressEdit->text(),
+                model->GetDefaultAddressType());
+        break;
+    case NewMintingrewardAddress:
+        address = model->addRow(
+                AddressTableModel::Mint,
                 ui->labelEdit->text(),
                 ui->addressEdit->text(),
                 model->GetDefaultAddressType());

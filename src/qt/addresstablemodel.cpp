@@ -16,12 +16,14 @@
 
 const QString AddressTableModel::Send = "S";
 const QString AddressTableModel::Receive = "R";
+const QString AddressTableModel::Mint = "M";
 
 struct AddressTableEntry
 {
     enum Type {
         Sending,
         Receiving,
+        Minting,
         Hidden /* QSortFilterProxyModel will filter these out */
     };
 
@@ -59,6 +61,8 @@ static AddressTableEntry::Type translateTransactionType(const QString &strPurpos
         addressType = AddressTableEntry::Sending;
     else if (strPurpose == "receive")
         addressType = AddressTableEntry::Receiving;
+    else if (strPurpose == "Mint")
+        addressType = AddressTableEntry::Minting;
     else if (strPurpose == "unknown" || strPurpose == "") // if purpose not set, guess
         addressType = (isMine ? AddressTableEntry::Receiving : AddressTableEntry::Sending);
     return addressType;
@@ -161,7 +165,7 @@ public:
 AddressTableModel::AddressTableModel(WalletModel *parent) :
     QAbstractTableModel(parent), walletModel(parent)
 {
-    columns << tr("Label") << tr("Address");
+    columns << tr("Label") << tr("Address") <<  tr("percentage");
     priv = new AddressTablePriv(this);
     priv->refreshAddressTable(parent->wallet());
 }
@@ -224,6 +228,8 @@ QVariant AddressTableModel::data(const QModelIndex &index, int role) const
             return Send;
         case AddressTableEntry::Receiving:
             return Receive;
+        case AddressTableEntry::Minting:
+            return Mint;
         default: break;
         }
     }
@@ -235,7 +241,7 @@ bool AddressTableModel::setData(const QModelIndex &index, const QVariant &value,
     if(!index.isValid())
         return false;
     AddressTableEntry *rec = static_cast<AddressTableEntry*>(index.internalPointer());
-    std::string strPurpose = (rec->type == AddressTableEntry::Sending ? "send" : "receive");
+    std::string strPurpose = (rec->type == AddressTableEntry::Sending ? "send" : rec->type == AddressTableEntry::Minting ? "mint" :"receive");
     editStatus = OK;
 
     if(role == Qt::EditRole)
@@ -308,6 +314,7 @@ Qt::ItemFlags AddressTableModel::flags(const QModelIndex &index) const
     // Can edit address and label for sending addresses,
     // and only label for receiving addresses.
     if(rec->type == AddressTableEntry::Sending ||
+       rec->type == AddressTableEntry::Minting ||
       (rec->type == AddressTableEntry::Receiving && index.column()==Label))
     {
         retval |= Qt::ItemIsEditable;
@@ -389,7 +396,7 @@ QString AddressTableModel::addRow(const QString &type, const QString &label, con
 
     // Add entry
     walletModel->wallet().setAddressBook(DecodeDestination(strAddress), strLabel,
-                           (type == Send ? "send" : "receive"));
+                           (type == Send ? "send" : type == Mint? "mint" : "receive"));
     return QString::fromStdString(strAddress);
 }
 

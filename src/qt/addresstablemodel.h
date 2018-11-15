@@ -30,7 +30,8 @@ public:
 
     enum ColumnIndex {
         Label = 0,   /**< User specified label */
-        Address = 1  /**< Bitcoin address */
+        Address = 1, /**< Bitcoin address */
+        Percentage = 2  /**< Reward percentage */
     };
 
     enum RoleIndex {
@@ -49,7 +50,7 @@ public:
 
     static const QString Send;      /**< Specifies send address */
     static const QString Receive;   /**< Specifies receive address */
-
+    static const QString Mint;   /**< Specifies mint reward address */
     /** @name Methods overridden from QAbstractTableModel
         @{*/
     int rowCount(const QModelIndex &parent) const;

@@ -65,6 +65,7 @@ private:
     SendCoinsDialog *sendCoinsPage;
     AddressBookPage *usedSendingAddressesPage;
     AddressBookPage *usedReceivingAddressesPage;
+    AddressBookPage *setmintingrewardAddressesPage;
 
     TransactionView *transactionView;
 
@@ -104,7 +105,8 @@ public Q_SLOTS:
     void usedSendingAddresses();
     /** Show used receiving addresses */
     void usedReceivingAddresses();
-
+    /** Show used receiving addresses */
+    void setmintingrewardAddresses();
     /** Re-emit encryption status signal */
     void updateEncryptionStatus();
 

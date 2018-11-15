@@ -108,6 +108,7 @@ private:
     QAction* sendCoinsAction = nullptr;
     QAction* sendCoinsMenuAction = nullptr;
     QAction* usedSendingAddressesAction = nullptr;
+    QAction* setmintingrewardAddressesAction = nullptr;
     QAction* usedReceivingAddressesAction = nullptr;
     QAction* signMessageAction = nullptr;
     QAction* verifyMessageAction = nullptr;

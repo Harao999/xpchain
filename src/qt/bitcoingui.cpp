@@ -316,6 +316,8 @@ void BitcoinGUI::createActions()
 
     usedSendingAddressesAction = new QAction(platformStyle->TextColorIcon(":/icons/address-book"), tr("&Sending addresses..."), this);
     usedSendingAddressesAction->setStatusTip(tr("Show the list of used sending addresses and labels"));
+    setmintingrewardAddressesAction = new QAction(platformStyle->TextColorIcon(":/icons/address-book"), tr("&MintingAdresses"), this);
+    setmintingrewardAddressesAction->setStatusTip(tr("set minting reward Address"));
     usedReceivingAddressesAction = new QAction(platformStyle->TextColorIcon(":/icons/address-book"), tr("&Receiving addresses..."), this);
     usedReceivingAddressesAction->setStatusTip(tr("Show the list of used receiving addresses and labels"));
 
@@ -345,6 +347,7 @@ void BitcoinGUI::createActions()
         connect(signMessageAction, SIGNAL(triggered()), this, SLOT(gotoSignMessageTab()));
         connect(verifyMessageAction, SIGNAL(triggered()), this, SLOT(gotoVerifyMessageTab()));
         connect(usedSendingAddressesAction, SIGNAL(triggered()), walletFrame, SLOT(usedSendingAddresses()));
+        connect(setmintingrewardAddressesAction, SIGNAL(triggered()), walletFrame, SLOT(setmintingrewardAddresses()));
         connect(usedReceivingAddressesAction, SIGNAL(triggered()), walletFrame, SLOT(usedReceivingAddresses()));
         connect(openAction, SIGNAL(triggered()), this, SLOT(openClicked()));
     }
@@ -384,6 +387,7 @@ void BitcoinGUI::createMenuBar()
     {
         settings->addAction(encryptWalletAction);
         settings->addAction(changePassphraseAction);
+        settings->addAction(setmintingrewardAddressesAction);
         settings->addSeparator();
     }
     settings->addAction(optionsAction);
@@ -569,6 +573,7 @@ void BitcoinGUI::setWalletActionsEnabled(bool enabled)
     signMessageAction->setEnabled(enabled);
     verifyMessageAction->setEnabled(enabled);
     usedSendingAddressesAction->setEnabled(enabled);
+    setmintingrewardAddressesAction->setEnabled(enabled);
     usedReceivingAddressesAction->setEnabled(enabled);
     openAction->setEnabled(enabled);
 }

@@ -26,8 +26,10 @@ class EditAddressDialog : public QDialog
 public:
     enum Mode {
         NewSendingAddress,
+        NewMintingrewardAddress,
         EditReceivingAddress,
-        EditSendingAddress
+        EditSendingAddress,
+        EditMintingrewardAddress
     };
 
     explicit EditAddressDialog(Mode mode, QWidget *parent = 0);

@@ -59,6 +59,7 @@ WalletView::WalletView(const PlatformStyle *_platformStyle, QWidget *parent):
 
     usedSendingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::SendingTab, this);
     usedReceivingAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::ReceivingTab, this);
+    setmintingrewardAddressesPage = new AddressBookPage(platformStyle, AddressBookPage::ForEditing, AddressBookPage::MintingrewardTab, this);
 
     addWidget(overviewPage);
     addWidget(transactionsPage);
@@ -131,6 +132,7 @@ void WalletView::setWalletModel(WalletModel *_walletModel)
     sendCoinsPage->setModel(_walletModel);
     usedReceivingAddressesPage->setModel(_walletModel ? _walletModel->getAddressTableModel() : nullptr);
     usedSendingAddressesPage->setModel(_walletModel ? _walletModel->getAddressTableModel() : nullptr);
+    setmintingrewardAddressesPage->setModel(_walletModel ? _walletModel->getAddressTableModel() : nullptr);
 
     if (_walletModel)
     {
@@ -296,6 +298,16 @@ void WalletView::usedSendingAddresses()
     usedSendingAddressesPage->show();
     usedSendingAddressesPage->raise();
     usedSendingAddressesPage->activateWindow();
+}
+
+void WalletView::setmintingrewardAddresses()
+{
+    if(!walletModel)
+        return;
+
+    setmintingrewardAddressesPage->show();
+    setmintingrewardAddressesPage->raise();
+    setmintingrewardAddressesPage->activateWindow();
 }
 
 void WalletView::usedReceivingAddresses()
