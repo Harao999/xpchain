@@ -241,7 +241,12 @@ bool AddressTableModel::setData(const QModelIndex &index, const QVariant &value,
     if(!index.isValid())
         return false;
     AddressTableEntry *rec = static_cast<AddressTableEntry*>(index.internalPointer());
-    std::string strPurpose = (rec->type == AddressTableEntry::Sending ? "send" : rec->type == AddressTableEntry::Minting ? "mint" :"receive");
+    std::string strPurpose =
+        (rec->type == AddressTableEntry::Sending ?
+            "send" :
+            rec->type == AddressTableEntry::Minting ?
+                "mint" :
+                "receive");
     editStatus = OK;
 
     if(role == Qt::EditRole)
@@ -396,7 +401,7 @@ QString AddressTableModel::addRow(const QString &type, const QString &label, con
 
     // Add entry
     walletModel->wallet().setAddressBook(DecodeDestination(strAddress), strLabel,
-                           (type == Send ? "send" : type == Mint? "mint" : "receive"));
+                           (type == Send ? "send" : type == Mint ? "mint" : "receive"));
     return QString::fromStdString(strAddress);
 }
 

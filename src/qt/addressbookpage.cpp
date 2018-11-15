@@ -157,7 +157,7 @@ void AddressBookPage::setModel(AddressTableModel *_model)
     if(!_model)
         return;
 
-    auto type = tab == ReceivingTab? AddressTableModel::Receive : tab == MintingrewardTab? AddressTableModel::Mint : AddressTableModel::Send;
+    auto type = tab == ReceivingTab ? AddressTableModel::Receive : tab == MintingrewardTab ? AddressTableModel::Mint : AddressTableModel::Send;
 
     proxyModel = new AddressBookSortFilterProxyModel(type, this);
     proxyModel->setSourceModel(_model);
@@ -208,10 +208,10 @@ void AddressBookPage::onEditAction()
 
     EditAddressDialog dlg(
         tab == SendingTab ?
-        EditAddressDialog::EditSendingAddress :
-        tab == MintingrewardTab ?
-        EditAddressDialog::EditMintingrewardAddress :
-        EditAddressDialog::EditReceivingAddress, this);
+            EditAddressDialog::EditSendingAddress :
+            tab == MintingrewardTab ?
+                EditAddressDialog::EditMintingrewardAddress :
+                EditAddressDialog::EditReceivingAddress, this);
     dlg.setModel(model);
     QModelIndex origIndex = proxyModel->mapToSource(indexes.at(0));
     dlg.loadRow(origIndex.row());
@@ -228,7 +228,7 @@ void AddressBookPage::on_newAddress_clicked()
     }
 
     EditAddressDialog dlg(
-        tab == MintingrewardTab?
+        tab == MintingrewardTab ?
         EditAddressDialog::NewMintingrewardAddress :
         EditAddressDialog::NewSendingAddress, this);
     dlg.setModel(model);
