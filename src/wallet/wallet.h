@@ -1213,6 +1213,7 @@ public:
     };
 
     bool CreateCoinStake(unsigned int nBits, CTransactionRef& txNew, CScript& script, CAmount& nFees,unsigned int nBlockTime);
+    bool CreateCoinStake(const COutput& coin, CTransactionRef& txNew, CAmount& nFees);
 
     std::vector<std::pair<std::string, std::uint8_t>> vRewardDistributionPcts;
     /** Set percentages of staking reward distribution to wallet, and write it to database file */

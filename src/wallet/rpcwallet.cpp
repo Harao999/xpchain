@@ -16,6 +16,7 @@
 #include <policy/fees.h>
 #include <policy/policy.h>
 #include <policy/rbf.h>
+#include <rpc/blockchain.h>
 #include <rpc/mining.h>
 #include <rpc/rawtransaction.h>
 #include <rpc/server.h>
@@ -37,6 +38,8 @@
 #include <univalue.h>
 
 #include <functional>
+
+#include <kernelrecord.h>
 
 static const std::string WALLET_ENDPOINT_BASE = "/wallet/";
 
@@ -4753,6 +4756,200 @@ UniValue walletcreatefundedpsbt(const JSONRPCRequest& request)
     return result;
 }
 
+static UniValue listmintings(const JSONRPCRequest& request)
+{
+    std::shared_ptr<CWallet> const wallet = GetWalletForJSONRPCRequest(request);
+    CWallet* const pwallet = wallet.get();
+
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    if (request.fHelp || request.params.size() > 5)
+        throw std::runtime_error(
+            "listmintings ( period minage maxage  [\"addresses\",...] [include_unsafe] [query_options] )\n"
+            "\nReturns array of minting status of transaction outputs\n"
+            "with between minage and maxage (inclusive) age.\n"
+            "Optionally filter to only include txouts paid to specified addresses.\n"
+            "\nArguments:\n"
+            "1. period           (numeric, optional, default=10) period in minute of calculate probability and reward\n"
+            "2. minage           (numeric, optional, default=1) The minimum age to filter\n"
+            "3. maxage           (numeric, optional, default=9999999) The maximum age to filter\n"
+            "4. \"addresses\"      (string, optional) A json array of xpchain addresses to filter\n"
+            "    [\n"
+            "      \"address\"     (string) xpchain address\n"
+            "      ,...\n"
+            "    ]\n"
+            "5. include_unsafe   (bool, optional, default=true) Include outputs that are not safe to spend\n"
+            "                  See description of \"safe\" attribute below.\n"
+            "6. query_options    (json, optional) JSON with query options\n"
+            "    {\n"
+            "      \"minimumAmount\"    (numeric or string, default=0) Minimum value of each UTXO in " + CURRENCY_UNIT + "\n"
+            "      \"maximumAmount\"    (numeric or string, default=unlimited) Maximum value of each UTXO in " + CURRENCY_UNIT + "\n"
+            "      \"maximumCount\"     (numeric or string, default=unlimited) Maximum number of UTXOs\n"
+            "      \"minimumSumAmount\" (numeric or string, default=unlimited) Minimum sum value of all UTXOs in " + CURRENCY_UNIT + "\n"
+            "    }\n"
+            "\nResult\n"
+            "[                   (array of json object)\n"
+            "  {\n"
+            "    \"txid\" : \"txid\",            (string) the transaction id \n"
+            "    \"vout\" : n,                 (numeric) the vout value\n"
+            "    \"address\" : \"address\",      (string) the xpchain address\n"
+            "    \"label\" : \"label\",          (string) The associated label, or \"\" for the default label\n"
+            "    \"account\" : \"account\",      (string) DEPRECATED. This field will be removed in V0.18. To see this deprecated field, start xpchaind with -deprecatedrpc=accounts. The associated account, or \"\" for the default account\n"
+            "    \"redeemScript\" : \"hex\",     (string) The redeemScript if scriptPubKey is P2SH\n"
+            "    \"scriptPubKey\" : \"key\",     (string) the script key\n"
+            "    \"amount\" : x.xxx,           (numeric) the transaction output amount in " + CURRENCY_UNIT + "\n"
+            "    \"age\" : x,                  (numeric) the transaction output age in day\n"
+            "    \"coinDay\" : x.xxx,          (numeric) the transaction weight for minting probability calculation\n"
+            "    \"probability\" : x.xxx,      (numeric) Probability to succeed within the specified period\n"
+            "    \"reward\" : {\n"
+            "      \"minimum\" : x.xxx,        (numeric) reward amount in " + CURRENCY_UNIT + " if you succeed immediateli\n"
+            "      \"maximum\" : x.xxx,        (numeric) reward amount in " + CURRENCY_UNIT + " if you succeed after specified period\n"
+            "    },\n"
+            "  }\n"
+            "  ,...\n"
+            "]\n"
+
+            "\nExamples\n"
+            + HelpExampleCli("listmintings", "")
+            + HelpExampleCli("listmintings", "10 6 9999999 \"[\\\"xpc1qgjmjulc04k09mdwdj3fng4qau3unmwc7k3k8su\\\",\\\"CPy4aRyZVYBAyzVuXmvGy6ce11AN8Woau3\\\"]\"")
+            + HelpExampleRpc("listmintings", "10, 6, 9999999 \"[\\\"xpc1qgjmjulc04k09mdwdj3fng4qau3unmwc7k3k8su\\\",\\\"CPy4aRyZVYBAyzVuXmvGy6ce11AN8Woau3\\\"]\"")
+            + HelpExampleCli("listmintings", "1440 6 9999999 '[]' true '{ \"minimumAmount\": 0.005 }'")
+            + HelpExampleRpc("listmintings", "1440, 6, 9999999, [] , true, { \"minimumAmount\": 0.005 } ")
+        );
+
+    int nCalculatePeriod = 10;
+    if (!request.params[0].isNull()) {
+        RPCTypeCheckArgument(request.params[0], UniValue::VNUM);
+        nCalculatePeriod = request.params[0].get_int();
+    }
+
+    int nMinAge = 1;
+    if (!request.params[1].isNull()) {
+        RPCTypeCheckArgument(request.params[1], UniValue::VNUM);
+        nMinAge = request.params[1].get_int();
+    }
+
+    int nMaxAge = 9999999;
+    if (!request.params[2].isNull()) {
+        RPCTypeCheckArgument(request.params[2], UniValue::VNUM);
+        nMaxAge = request.params[2].get_int();
+    }
+
+    std::set<CTxDestination> destinations;
+    if (!request.params[3].isNull()) {
+        RPCTypeCheckArgument(request.params[3], UniValue::VARR);
+        UniValue inputs = request.params[3].get_array();
+        for (unsigned int idx = 0; idx < inputs.size(); idx++) {
+            const UniValue& input = inputs[idx];
+            CTxDestination dest = DecodeDestination(input.get_str());
+            if (!IsValidDestination(dest)) {
+                throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, std::string("Invalid XPChain address: ") + input.get_str());
+            }
+            if (!destinations.insert(dest).second) {
+                throw JSONRPCError(RPC_INVALID_PARAMETER, std::string("Invalid parameter, duplicated address: ") + input.get_str());
+            }
+        }
+    }
+
+    bool include_unsafe = true;
+    if (!request.params[4].isNull()) {
+        RPCTypeCheckArgument(request.params[4], UniValue::VBOOL);
+        include_unsafe = request.params[4].get_bool();
+    }
+
+    CAmount nMinimumAmount = 0;
+    CAmount nMaximumAmount = MAX_MONEY;
+    CAmount nMinimumSumAmount = MAX_MONEY;
+    uint64_t nMaximumCount = 0;
+
+    if (!request.params[5].isNull()) {
+        const UniValue& options = request.params[5].get_obj();
+
+        if (options.exists("minimumAmount"))
+            nMinimumAmount = AmountFromValue(options["minimumAmount"]);
+
+        if (options.exists("maximumAmount"))
+            nMaximumAmount = AmountFromValue(options["maximumAmount"]);
+
+        if (options.exists("minimumSumAmount"))
+            nMinimumSumAmount = AmountFromValue(options["minimumSumAmount"]);
+
+        if (options.exists("maximumCount"))
+            nMaximumCount = options["maximumCount"].get_int64();
+    }
+
+    // Make sure the results are valid at least up to the most recent block
+    // the user could have gotten from another RPC command prior to now
+    pwallet->BlockUntilSyncedToCurrentChain();
+
+    UniValue results(UniValue::VARR);
+    std::vector<COutput> vecOutputs;
+    {
+        LOCK2(cs_main, pwallet->cs_wallet);
+        pwallet->AvailableCoins(vecOutputs, !include_unsafe, nullptr, nMinimumAmount, nMaximumAmount, nMinimumSumAmount, nMaximumCount, 1, 99999999);
+    }
+
+    LOCK(pwallet->cs_wallet);
+
+    for (const COutput& out : vecOutputs) {
+        CTxDestination address;
+        const CScript& scriptPubKey = out.tx->tx->vout[out.i].scriptPubKey;
+        bool fValidAddress = ExtractDestination(scriptPubKey, address);
+        std::string addrStr = EncodeDestination(address);
+        KernelRecord* kr = new KernelRecord(out.tx->GetHash(), out.i, out.tx->GetTxTime(),
+                                           addrStr, out.tx->tx->vout[out.i].nValue);
+
+        if (destinations.size() && (!fValidAddress || !destinations.count(address)))
+            continue;
+
+        if (kr->getAge() < nMinAge || kr->getAge() > nMaxAge)
+            continue;
+
+        UniValue entry(UniValue::VOBJ);
+        entry.pushKV("txid", out.tx->GetHash().GetHex());
+        entry.pushKV("vout", out.i);
+
+        if (fValidAddress) {
+            entry.pushKV("address", EncodeDestination(address));
+
+            auto i = pwallet->mapAddressBook.find(address);
+            if (i != pwallet->mapAddressBook.end()) {
+                entry.pushKV("label", i->second.name);
+                if (IsDeprecatedRPCEnabled("accounts")) {
+                    entry.pushKV("account", i->second.name);
+                }
+            }
+
+            if (scriptPubKey.IsPayToScriptHash()) {
+                const CScriptID& hash = boost::get<CScriptID>(address);
+                CScript redeemScript;
+                if (pwallet->GetCScript(hash, redeemScript)) {
+                    entry.pushKV("redeemScript", HexStr(redeemScript.begin(), redeemScript.end()));
+                }
+            }
+        }
+
+        UniValue rewards(UniValue::VOBJ);
+        rewards.pushKV("minimum", kr->getPoSReward(0));
+        rewards.pushKV("maximum", kr->getPoSReward(nCalculatePeriod));
+        double probability = kr->getProbToMintWithinNMinutes(GetDifficulty(chainActive.Tip()), nCalculatePeriod);
+
+        entry.pushKV("scriptPubKey", HexStr(scriptPubKey.begin(), scriptPubKey.end()));
+        entry.pushKV("amount", ValueFromAmount(out.tx->tx->vout[out.i].nValue));
+        entry.pushKV("age", kr->getAge());
+        entry.pushKV("coinDay", kr->getCoinDay());
+        entry.pushKV("probability", probability);
+        entry.pushKV("reward", rewards);
+        results.push_back(entry);
+
+        delete kr; // release
+    }
+
+    return results;
+}
+
 extern UniValue abortrescan(const JSONRPCRequest& request); // in rpcdump.cpp
 extern UniValue dumpprivkey(const JSONRPCRequest& request); // in rpcdump.cpp
 extern UniValue importprivkey(const JSONRPCRequest& request);
@@ -4838,6 +5035,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "setlabel",                         &setlabel,                      {"address","label"} },
 
     { "generating",         "generate",                         &generate,                      {"nblocks","maxtries"} },
+    { "mining",             "listmintings",                     &listmintings,                   {"period", "minage","maxage","addresses","include_unsafe","query_options"} },
 };
 
 void RegisterWalletRPCCommands(CRPCTable &t)

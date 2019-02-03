@@ -69,7 +69,7 @@ MintingView::MintingView(const PlatformStyle *platformStyle, QWidget *parent) :
     mintingCombo->addItem(tr("24 hours"), Minting1day);
     mintingCombo->addItem(tr("7 days"), Minting7days);
     mintingCombo->addItem(tr("30 days"), Minting30days);
-    mintingCombo->addItem(tr("90 days"), Minting90days);
+    mintingCombo->addItem(tr("60 days"), Minting60days);
     mintingCombo->setFixedWidth(120);
 
 
@@ -181,8 +181,8 @@ void MintingView::chooseMintingInterval(int idx)
         case Minting30days:
             interval = 60*24*30;
             break;
-        case Minting90days:
-            interval = 60*24*90;
+        case Minting60days:
+            interval = 60*24*60;
             break;
     }
     model->getMintingTableModel()->setMintingInterval(interval);

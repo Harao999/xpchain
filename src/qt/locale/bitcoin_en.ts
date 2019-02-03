@@ -1226,7 +1226,7 @@
 <context>
     <name>MintingTableModel</name>
     <message>
-        <location filename="../mintingtablemodel.cpp" line="+200"/>
+        <location filename="../mintingtablemodel.cpp" line="+185"/>
         <source>Transaction</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1360,7 +1360,7 @@
     </message>
     <message>
         <location line="+1"/>
-        <source>90 days</source>
+        <source>60 days</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

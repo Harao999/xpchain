@@ -172,6 +172,12 @@ static const CRPCConvertParam vRPCConvertParams[] =
     { "rescanblockchain", 0, "start_height"},
     { "rescanblockchain", 1, "stop_height"},
     { "createwallet", 1, "disable_private_keys"},
+    { "listmintings", 0, "period" },
+    { "listmintings", 1, "minage" },
+    { "listmintings", 2, "maxage" },
+    { "listmintings", 3, "addresses" },
+    { "listmintings", 4, "include_unsafe" },
+    { "listmintings", 5, "query_options" },
 };
 
 class CRPCConvertTable

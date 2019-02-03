@@ -1082,8 +1082,8 @@
         <translation>30日間</translation>
     </message>
     <message>
-        <source>90 days</source>
-        <translation>90日間</translation>
+        <source>60 days</source>
+        <translation>60日間</translation>
     </message>
     <message>
         <source>Copy address</source>
@@ -1328,7 +1328,7 @@
     </message>
     <message>
         <source>Expert</source>
-        <translation>エクスポート</translation>
+        <translation>上級者向け機能</translation>
     </message>
     <message>
         <source>Enable coin &amp;control features</source>
