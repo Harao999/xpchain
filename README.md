@@ -10,7 +10,7 @@ What is XPChain?
 
 XPChain, which is usually abbreviated XPC, is a cryptocurrency based on Bitcoin 0.17.0.
 
-XPChain introduces new proof-of-stake consensus as a secutiry model, which solves
+XPChain introduces new proof-of-stake consensus as a security model, which solves
 “nothing at stake” issue in a way proposed by Peercoin community, and enables you
 to distribute your staking rewards to anyone in the world.
 
@@ -19,6 +19,24 @@ software which enables the use of this currency.
 
 For more information, <!-- as well as an immediately useable, binary version of
 the XPChain Core software, see https://bitcoincore.org/en/download/, --> read the [original whitepaper](https://www.xpchain.io/?loc=lnkwhitepaper).
+
+For Exchanges
+-------
+- The amounts of XPChain in any transaction must be decimals to at most 4 places,
+while those of Bitcoin are ones to up to 8 places. If you try to generate a transaction,
+which contains the amount that is a decimal to more than 4 places, an error will occur.
+- Make sure you put no restrictions on the length of withdrawal addresses. Addresses of
+XPChain can be around 75 characters. Nothing would probably go wrong if you support the latest
+Bitcoin's address generation.
+- Use native Segwit (bech32) addresses instead of legacy addresses, which enables you to send
+XPC to either legacy, native Segwit, P2SH-Segwit, or P2WSH addresses.
+- You can be sent XPC that cannot be spent in next 100 blocks, because XPChain wallet has the
+function of sending proof-of-stake reward to arbitrary addresses and its users can easily transfer
+their reward to an exchange's deposit address.
+- Make sure your wallet is running with `-minting=0` to disable minting.
+When you mint a block with your customer's funds, you receive a transaction of ‘payment to yourself’
+(called ‘coinstake’ or ‘age-burn’ transaction) as well as a coinbase transaction. This would cause
+incorrect double depositing if your deposit system were to monitor only payments to the customer's deposit addresses.
 
 License
 -------

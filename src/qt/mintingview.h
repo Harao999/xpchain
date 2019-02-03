@@ -36,7 +36,7 @@ public:
         Minting1day,
         Minting7days,
         Minting30days,
-        Minting90days
+        Minting60days,
     };
 
 private:

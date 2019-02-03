@@ -116,3 +116,6 @@ test/cache/*
 
 libxpchainconsensus.pc
 contrib/devtools/split-debug.sh
+
+docker-compose.yml
+docker-compose.override.yml

@@ -231,7 +231,6 @@ libbitcoin_server_a_SOURCES = \
   index/txindex.cpp \
   init.cpp \
   kernel.cpp \
-  kernelrecord.cpp \
   dbwrapper.cpp \
   merkleblock.cpp \
   miner.cpp \
@@ -386,6 +385,7 @@ libbitcoin_common_a_SOURCES = \
   compressor.cpp \
   core_read.cpp \
   core_write.cpp \
+  kernelrecord.cpp \
   key.cpp \
   key_io.cpp \
   keystore.cpp \

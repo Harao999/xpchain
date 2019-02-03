@@ -163,7 +163,8 @@ public:
 
     /** Construct a new block template with coinbase to scriptPubKeyIn */
     std::unique_ptr<CBlockTemplate> CreateNewBlock(const CScript& scriptPubKeyIn, bool fMineWitnessTx=true);
-    std::unique_ptr<CBlockTemplate> CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, bool fMineWitnessTx = true);
+    std::unique_ptr<CBlockTemplate> CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, uint32_t nTime, unsigned int nBits, CTransactionRef txCoinStake, CAmount nFees, CBlockIndex* pIndexLast, bool fMineWitnessTx = true);
+    std::unique_ptr<CBlockTemplate> CreateNewBlock(const CScript& scriptPubKeyIn, uint32_t nTime, unsigned int nBits, CTransactionRef txCoinStake, CAmount nFees, CBlockIndex* pindexLast, bool fMineWitnessTx = true);
 
 private:
     // utility functions

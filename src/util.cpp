@@ -637,8 +637,8 @@ std::string ArgsManager::GetHelpMessage() const
             case OptionsCategory::REGISTER_COMMANDS:
                 usage += HelpMessageGroup("Register Commands:");
                 break;
-            case OptionsCategory::STAKE:
-                usage += HelpMessageGroup("Stake");
+            case OptionsCategory::MINTING:
+                usage += HelpMessageGroup("Minting Options:");
                 break;
             default:
                 break;

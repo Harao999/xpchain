@@ -59,15 +59,7 @@ struct TxLessThan
 {
     bool operator()(const KernelRecord &a, const KernelRecord &b) const
     {
-        return a.hash < b.hash;
-    }
-    bool operator()(const KernelRecord &a, const uint256 &b) const
-    {
-        return a.hash < b;
-    }
-    bool operator()(const uint256 &a, const KernelRecord &b) const
-    {
-        return a < b.hash;
+        return a.hash < b.hash || (a.hash == b.hash && a.n < b.n);
     }
 };
 
@@ -112,34 +104,27 @@ public:
                 if(KernelRecord::showTransaction())
                 {
 
-                    QList<KernelRecord>::iterator lower = qLowerBound(
-                        cachedWallet.begin(), cachedWallet.end(), output.hash, TxLessThan());
-                    QList<KernelRecord>::iterator upper = qUpperBound(
-                        cachedWallet.begin(), cachedWallet.end(), output.hash, TxLessThan());
-                    int lowerIndex = (lower - cachedWallet.begin());
-                    bool inModel = (lower != upper);
+                    for(const KernelRecord& kr : txList)
+                    {
+                        QList<KernelRecord>::iterator lower = qLowerBound(
+                            cachedWallet.begin(), cachedWallet.end(), kr, TxLessThan());
+                        QList<KernelRecord>::iterator upper = qUpperBound(
+                            cachedWallet.begin(), cachedWallet.end(), kr, TxLessThan());
+                        int lowerIndex = (lower - cachedWallet.begin());
+                        bool inModel = (lower != upper);
 
-                    if(inModel)
-                    {
-                        int offset = 0;
-                        for(const KernelRecord& kr : txList)
+                        if(inModel)
                         {
-                            cachedWallet.replace(lowerIndex + offset, kr);
-                            mask.replace(lowerIndex + offset, true);
-                            offset++;
+                            cachedWallet.replace(lowerIndex, kr);
+                            mask.replace(lowerIndex, true);
                         }
-                    }
-                    else
-                    {
-                        parent->beginInsertRows(QModelIndex(), lowerIndex, lowerIndex + txList.size() - 1);
-                        int offset = 0;
-                        for(const KernelRecord& kr : txList)
+                        else
                         {
-                            cachedWallet.insert(lowerIndex + offset, kr);
-                            mask.insert(lowerIndex + offset, true);
-                            offset++;
+                            parent->beginInsertRows(QModelIndex(), lowerIndex, lowerIndex);
+                            cachedWallet.insert(lowerIndex, kr);
+                            mask.insert(lowerIndex, true);
+                            parent->endInsertRows();
                         }
-                        parent->endInsertRows();
                     }
                 }
             }
@@ -311,7 +296,7 @@ QVariant MintingTableModel::data(const QModelIndex &index, int role) const
         case Age:
             return (qlonglong)rec->getAge();
         case CoinDay:
-            return (qlonglong)rec->coinAge;
+            return (qlonglong)rec->getCoinDay();
         case Balance:
             return (qlonglong)rec->nValue;
         case MintProbability:
@@ -395,7 +380,7 @@ QString MintingTableModel::formatTxHash(const KernelRecord *wtx) const
 
 QString MintingTableModel::formatTxCoinDay(const KernelRecord *wtx) const
 {
-    return QString::number(wtx->coinAge);
+    return QString::number(wtx->getCoinDay());
 }
 
 QString MintingTableModel::formatTxAge(const KernelRecord *wtx) const

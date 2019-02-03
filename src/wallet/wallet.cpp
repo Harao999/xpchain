@@ -4356,6 +4356,26 @@ bool CWallet::BackupWallet(const std::string& strDest)
     return database->Backup(strDest);
 }
 
+bool CWallet::CreateCoinStake(const COutput& coin, CTransactionRef& txNew, CAmount& nFees)
+{
+    CCoinControl coin_control;
+    coin_control.Select(coin.GetInputCoin().outpoint);
+
+    int nChangePosRet = -1;
+
+    CRecipient recipient {coin.GetInputCoin().txout.scriptPubKey, coin.GetInputCoin().txout.nValue, true};
+    std::vector<CRecipient> vecSend;
+    std::string strError;
+    vecSend.push_back(recipient);
+    {
+        LOCK2(cs_main, cs_wallet);
+        CReserveKey reserve_key(this);
+        if(!CreateTransaction(vecSend, txNew, reserve_key, nFees, nChangePosRet, strError, coin_control, true, true))
+            return false;
+    }
+    return true;
+}
+
 bool CWallet::CreateCoinStake(unsigned int nBits, CTransactionRef& txNew, CScript& script, CAmount& nFees,unsigned int nBlockTime)
 {
     //get utxo pool
