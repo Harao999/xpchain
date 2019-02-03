@@ -436,7 +436,7 @@ void BitcoinGUI::createToolBars()
         toolbar->addAction(mintingAction);
         addToolBar(Qt::LeftToolBarArea, toolbar);
         toolbar->setStyleSheet("QToolBar{background-color: #001A43;}"
-                        "QToolButton{color:black;}"
+                        "QToolButton{color:white;}"
                         "QToolTip { color: black; }");
         overviewAction->setChecked(true);
 
